@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>امتحن نفسك (استجابة فورية سريعة)</title>
+    <title>امتحن نفسك (التطابق الفردي لكل كلمة)</title>
     <style>
         :root {
             --primary-color: #047857;
@@ -105,33 +105,44 @@
             font-weight: bold;
         }
 
-        /* صندوق ظهور الكلمات الفوري */
+        /* صندوق ظهور الكلمات الفردية */
         .feedback-box {
             background: #f1f5f9;
-            padding: 18px;
+            padding: 20px;
             border-radius: 8px;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             text-align: center;
-            line-height: 2.2;
+            line-height: 2.5;
             font-family: 'Amiri', serif;
-            min-height: 80px;
+            min-height: 90px;
+        }
+
+        .word-pending {
+            color: #94a3b8;
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin: 0 3px;
+            display: inline-block;
         }
 
         .word-ok { 
             color: var(--success-color); 
             background: #dcfce7; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            margin: 0 2px;
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            margin: 0 3px;
+            display: inline-block;
             font-weight: bold; 
         }
 
         .word-err { 
             color: var(--error-color); 
             background: #fee2e2; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            margin: 0 2px;
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            margin: 0 3px;
+            display: inline-block;
             font-weight: bold; 
             text-decoration: underline wavy var(--error-color); 
         }
@@ -187,7 +198,7 @@
 <body>
 
     <div class="container">
-        <h1>امتحن نفسك (استجابة فورية سريعة جداً)</h1>
+        <h1>امتحن نفسك (مطابقة الكلمة تلو الأخرى)</h1>
         
         <div class="settings-box" id="settingsBox">
             <div>
@@ -205,7 +216,7 @@
                 </div>
                 <div>
                     <label style="visibility: hidden;">بدء</label>
-                    <div style="font-size: 0.80rem; color: #047857; padding-top: 10px; font-weight: bold;">تظهر الكلمات فور نطقها</div>
+                    <div style="font-size: 0.80rem; color: #047857; padding-top: 10px; font-weight: bold;">تتطابق كل كلمة تنطقها بدقة</div>
                 </div>
             </div>
         </div>
@@ -214,15 +225,16 @@
             <button id="startBtn" onclick="toggleSession()">ابدأ اختبار الحفظ الآن</button>
         </div>
 
-        <div class="status" id="statusText">جاهز. اضغط ابدأ وابدأ بالقراءة بوضوح.</div>
+        <div class="status" id="statusText">جاهز. اضغط ابدأ واقرأ الآية كلمة بكلمة.</div>
 
         <div class="exam-box" id="examBox" style="display: none;">
             <div class="exam-badge" id="examBadge">سؤال الآية رقم: 1</div>
-            <div class="hidden-prompt" id="hiddenPrompt">🎙️ استمع إليك الآن... اقرأ الكلمات فوراً</div>
+            <div class="hidden-prompt" id="hiddenPrompt">🎙️ اقرأ الكلمات بصوت واضح لتتلوّن أمامك</div>
         </div>
 
+        <!-- صندوق الكلمات الفردية للتطابق الدقيق -->
         <div class="feedback-box" id="feedbackBox">
-            <span style="color: #94a3b8; font-size: 0.95rem;">الكلمات ستظهر هنا باللون الأخضر أو الأحمر فور خروجها من فمك...</span>
+            <span style="color: #94a3b8; font-size: 0.95rem;">ستظهر كلمات الآية هنا، وكل كلمة تنطقها بشكل صحيح ستتحول للأخضر...</span>
         </div>
 
         <div class="helper-row" id="helperRow" style="display: none;">
@@ -269,8 +281,10 @@
         let startIndex = 0, endIndex = 0, currentIndex = 0;
         let recognition = null;
         let isSessionActive = false;
-        let targetCleanWords = [];
+        
         let targetOriginalWords = [];
+        let targetCleanWords = [];
+        let wordStatuses = []; // تتبع حالة كل كلمة في الآية الحالية (0: قيد الانتظار، 1: صحيح، -1: خطأ)
 
         const surahSelect = document.getElementById('surahSelect');
         const fromAyah = document.getElementById('fromAyah');
@@ -318,25 +332,22 @@
             }
         }
 
-        // إعداد التعرف الصوتي بأقصى سرعة استجابة لحظية
         if ('webkitSpeechRecognition' in window || 'speechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.lang = 'ar-SA';
             recognition.continuous = true;
-            recognition.interimResults = true; // مفتاح السرعة: تظهر الكلمات وهي تطير من فمك فوراً
+            recognition.interimResults = true;
 
             recognition.onresult = (event) => {
                 let liveTranscript = '';
-                // دمج النتائج المؤقتة فوراً لعدم حدوث أي تأخير
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     liveTranscript += event.results[i][0].transcript + ' ';
                 }
-                processFastSpeech(liveTranscript);
+                matchWordByWord(liveTranscript);
             };
 
             recognition.onerror = (event) => {
-                // تجاهل أخطاء التوقف المؤقت البسيطة للميكروفون لاستمرار العمل بسلاسة
                 if(event.error !== 'no-speech') {
                     statusText.textContent = 'تنبيه: ' + event.error;
                 }
@@ -348,7 +359,7 @@
                 }
             };
         } else {
-            alert('متصفحك لا يدعم التعرف الصوتي السريع. استخدم Google Chrome.');
+            alert('متصفحك لا يدعم التعرف الصوتي.');
         }
 
         function toggleSession() {
@@ -402,62 +413,95 @@
             let fullAyahText = currentAyahs[currentIndex];
             
             examBadge.textContent = `اختبار سورة ${currentSurahName} - الآية رقم ${currentIndex + 1}`;
-            hiddenPrompt.textContent = "🎙️ جاهز... اقرأ الكلمات وسترى تلوينها فوراً";
+            hiddenPrompt.textContent = "🎙️ اقرأ الآية كلمة بكلمة ليمتحنك التطبيق";
             
-            targetCleanWords = cleanText(fullAyahText);
             targetOriginalWords = fullAyahText.split(/\s+/);
+            targetCleanWords = targetOriginalWords.map(w => cleanWord(w));
+            wordStatuses = new Array(targetOriginalWords.length).fill(0); // 0 معلق، 1 صح، -1 خطأ
             
-            feedbackBox.innerHTML = '<span style="color: #64748b;">ابدأ القراءة الآن...</span>';
-            statusText.textContent = '🎙️ جاري الاستماع الفوري...';
+            renderWordBoxes();
+            statusText.textContent = '🎙️ جاري الاستماع... في انتظار الكلمة الأولى';
         }
 
-        function cleanText(text) {
-            return text.replace(/[ًٌٍَُِّْـ]/g, "")
+        function cleanWord(word) {
+            return word.replace(/[ًٌٍَُِّْـ]/g, "")
                        .replace(/[^\w\sأإآٱةؤئىأإآ]/gi, "")
-                       .trim()
-                       .split(/\s+/)
-                       .filter(w => w.length > 0);
+                       .trim();
         }
 
-        // المعالجة الفورية السريعة للكلمات المنطوقة
-        function processFastSpeech(spokenText) {
+        // رسم صناديق الكلمات الخاصة بالآية الحالية
+        function renderWordBoxes() {
+            let html = '';
+            targetOriginalWords.forEach((word, idx) => {
+                let cssClass = 'word-pending';
+                let displayText = word;
+                if (wordStatuses[idx] === 1) {
+                    cssClass = 'word-ok';
+                } else if (wordStatuses[idx] === -1) {
+                    cssClass = 'word-err';
+                    displayText = word + ' ❌';
+                } else {
+                    displayText = '• ⁠• ⁠•'; // إخفاء الكلمة حتى يتم نطقها أو طلب المساعدة
+                }
+                html += `<span class="${cssClass}">${displayText}</span> `;
+            });
+            feedbackBox.innerHTML = html;
+        }
+
+        // مطابقة كل كلمة ينطقها المستخدم بدقة
+        function matchWordByWord(spokenText) {
             if (!isSessionActive) return;
             
-            let spokenWords = cleanText(spokenText);
-            let htmlOut = '';
-            let matchedCount = 0;
-            let hasError = false;
+            let spokenWords = spokenText.split(/\s+/).map(w => cleanWord(w)).filter(w => w.length > 0);
+            let updated = false;
 
-            for (let i = 0; i < spokenWords.length && i < targetCleanWords.length; i++) {
-                if (spokenWords[i] === targetCleanWords[i]) {
-                    htmlOut += `<span class="word-ok">${targetOriginalWords[i]}</span> `;
-                    matchedCount++;
-                } else {
-                    htmlOut += `<span class="word-err">${targetOriginalWords[i]} (خطأ)</span> `;
-                    hasError = true;
+            // فحص مطابقة الكلمات بالتتابع
+            let spokenIdx = 0;
+            for (let i = 0; i < targetCleanWords.length; i++) {
+                if (wordStatuses[i] === 1) continue; // تم تجاوزها مسبقاً بشكل صحيح
+
+                if (spokenIdx < spokenWords.length) {
+                    let spWord = spokenWords[spokenIdx];
+                    let targetW = targetCleanWords[i];
+
+                    if (spWord === targetW) {
+                        wordStatuses[i] = 1; // الكلمة صحيحة
+                        updated = true;
+                        spokenIdx++;
+                    } else {
+                        // إذا كانت الكلمة غير مطابقة، نعتبرها خاطئة مؤقتاً لتظهر باللون الأحمر
+                        wordStatuses[i] = -1;
+                        updated = true;
+                        spokenIdx++;
+                    }
                 }
             }
 
-            if (htmlOut !== '') {
-                feedbackBox.innerHTML = htmlOut;
+            if (updated) {
+                renderWordBoxes();
             }
 
-            if (hasError) {
-                statusText.textContent = '⚠️ تنبيه: تم رصد كلمة خاطئة (محددة بالأحمر).';
-            }
-
-            // الانتقال الفوري التلقائي للآية التالية عند اكتمال الآية الحالية
-            if (matchedCount >= targetCleanWords.length) {
-                statusText.textContent = '✅ أحسنت! تم اجتياز الآية والانتقال للآية التالية...';
+            // التحقق مما إذا تم إنهاء جميع كلمات الآية بشكل صحيح تماماً
+            let allCorrect = wordStatuses.every(st => st === 1);
+            if (allCorrect) {
+                statusText.textContent = '✅ أحسنت! أجتزت هذه الآية، الانتقال للآية التالية...';
                 setTimeout(() => {
                     loadAyahTest(currentIndex + 1);
-                }, 1200);
+                }, 1500);
+            } else if (wordStatuses.includes(-1)) {
+                statusText.textContent = '⚠️ وُجد خطأ في إحدى الكلمات (محددة باللون الأحمر).';
             }
         }
 
         function revealAyahText() {
-            hiddenPrompt.textContent = currentAyahs[currentIndex];
-            hiddenPrompt.style.color = '#047857';
+            // إظهار الكلمات الحقيقية للتوضيح عند النسيان
+            let html = '';
+            targetOriginalWords.forEach((word, idx) => {
+                let cssClass = wordStatuses[idx] === 1 ? 'word-ok' : 'word-pending';
+                html += `<span class="${cssClass}">${word}</span> `;
+            });
+            feedbackBox.innerHTML = html;
+            hiddenPrompt.textContent = "💡 تم كشف النص للمساعدة";
         }
 
         window.onload = initApp;
