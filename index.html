@@ -2,509 +2,78 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>امتحن نفسك (التطابق الفردي لكل كلمة)</title>
+    <title>تسميع القرآن - تصحيح فوري</title>
     <style>
-        :root {
-            --primary-color: #047857;
-            --primary-light: #10b981;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --error-color: #ef4444;
-            --success-color: #22c55e;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-        }
-
-        .settings-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .full-width {
-            grid-column: span 2;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        label {
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: block;
-            color: #475569;
-        }
-
-        select, button {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 1rem;
-            background: white;
-            box-sizing: border-box;
-        }
-
-        .exam-box {
-            background: #fffbeb;
-            border: 2px dashed #f59e0b;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            text-align: center;
-            min-height: 110px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .exam-badge {
-            background: #d97706;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .hidden-prompt {
-            font-size: 1.1rem;
-            color: #92400e;
-            font-weight: bold;
-        }
-
-        /* صندوق ظهور الكلمات الفردية */
-        .feedback-box {
-            background: #f1f5f9;
-            padding: 20px;
-            border-radius: 8px;
-            font-size: 1.4rem;
-            text-align: center;
-            line-height: 2.5;
-            font-family: 'Amiri', serif;
-            min-height: 90px;
-        }
-
-        .word-pending {
-            color: #94a3b8;
-            background: #e2e8f0;
-            padding: 3px 8px;
-            border-radius: 6px;
-            margin: 0 3px;
-            display: inline-block;
-        }
-
-        .word-ok { 
-            color: var(--success-color); 
-            background: #dcfce7; 
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            margin: 0 3px;
-            display: inline-block;
-            font-weight: bold; 
-        }
-
-        .word-err { 
-            color: var(--error-color); 
-            background: #fee2e2; 
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            margin: 0 3px;
-            display: inline-block;
-            font-weight: bold; 
-            text-decoration: underline wavy var(--error-color); 
-        }
-
-        .controls {
-            margin-bottom: 15px;
-        }
-
-        #startBtn {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            font-size: 1.1rem;
-        }
-
-        #startBtn.recording {
-            background-color: var(--error-color);
-            animation: pulse 1.2s infinite;
-        }
-
-        .status {
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        .helper-row {
-            text-align: center;
-            margin-top: 10px;
-        }
-        #revealBtn {
-            background: transparent;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-            font-size: 0.85rem;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: auto;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
+        body { font-family: sans-serif; padding: 20px; background: #f0fdf4; }
+        .feedback { font-size: 24px; margin-top: 20px; min-height: 50px; border: 2px solid #ccc; padding: 15px; border-radius: 10px; }
+        .word { margin: 5px; padding: 5px; border-radius: 5px; }
+        .correct { background: #86efac; }
+        .wrong { background: #fca5a5; }
+        .status { color: #064e3b; font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>امتحن نفسك (مطابقة الكلمة تلو الأخرى)</h1>
-        
-        <div class="settings-box" id="settingsBox">
-            <div>
-                <label for="surahSelect">اختر السورة:</label>
-                <select id="surahSelect" onchange="updateAyahOptions()"></select>
-            </div>
-            <div>
-                <label for="fromAyah">من الآية:</label>
-                <select id="fromAyah" onchange="validateRange()"></select>
-            </div>
-            <div class="full-width">
-                <div>
-                    <label for="toAyah">إلى الآية:</label>
-                    <select id="toAyah" onchange="validateRange()"></select>
-                </div>
-                <div>
-                    <label style="visibility: hidden;">بدء</label>
-                    <div style="font-size: 0.80rem; color: #047857; padding-top: 10px; font-weight: bold;">تتطابق كل كلمة تنطقها بدقة</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button id="startBtn" onclick="toggleSession()">ابدأ اختبار الحفظ الآن</button>
-        </div>
-
-        <div class="status" id="statusText">جاهز. اضغط ابدأ واقرأ الآية كلمة بكلمة.</div>
-
-        <div class="exam-box" id="examBox" style="display: none;">
-            <div class="exam-badge" id="examBadge">سؤال الآية رقم: 1</div>
-            <div class="hidden-prompt" id="hiddenPrompt">🎙️ اقرأ الكلمات بصوت واضح لتتلوّن أمامك</div>
-        </div>
-
-        <!-- صندوق الكلمات الفردية للتطابق الدقيق -->
-        <div class="feedback-box" id="feedbackBox">
-            <span style="color: #94a3b8; font-size: 0.95rem;">ستظهر كلمات الآية هنا، وكل كلمة تنطقها بشكل صحيح ستتحول للأخضر...</span>
-        </div>
-
-        <div class="helper-row" id="helperRow" style="display: none;">
-            <button id="revealBtn" onclick="revealAyahText()">إظهار النص (للمساعدة عند النسيان)</button>
-        </div>
-    </div>
+    <div class="status" id="msg">اضغط "ابدأ" للسماح بالميكروفون والبدء</div>
+    <button onclick="startListening()" style="padding: 15px; font-size: 18px;">ابدأ الاختبار الآن</button>
+    <div class="feedback" id="display">سأعرض كلماتك هنا فور نطقها...</div>
 
     <script>
-        const localQuranData = {
-            "الفاتحة": [
-                "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-                "الرَّحْمَٰنِ الرَّحِيمِ",
-                "مَالِكِ يَوْمِ الدِّينِ",
-                "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-                "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
-                "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ"
-            ],
-            "الإخلاص": [
-                "قُلْ هُوَ اللَّهُ أَحَدٌ",
-                "اللَّهُ الصَّمَدُ",
-                "لَمْ يَلِدْ وَلَمْ يُولَدْ",
-                "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"
-            ],
-            "الناس": [
-                "قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
-                "مَلِكِ النَّاسِ",
-                "إِلَهِ النَّاسِ",
-                "مِنْ شَرِّ الْوَسْواسِ الْخَنَّاسِ",
-                "الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ",
-                "مِنَ الْجِنَّةِ وَالنَّاسِ"
-            ],
-            "الفلق": [
-                "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ",
-                "مِنْ شَرِّ مَا خَلَقَ",
-                "وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ",
-                "وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ",
-                "وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ"
-            ]
-        };
-
-        let currentSurahName = "";
-        let currentAyahs = [];
-        let startIndex = 0, endIndex = 0, currentIndex = 0;
-        let recognition = null;
-        let isSessionActive = false;
+        const display = document.getElementById('display');
+        const msg = document.getElementById('msg');
         
-        let targetOriginalWords = [];
-        let targetCleanWords = [];
-        let wordStatuses = []; // تتبع حالة كل كلمة في الآية الحالية (0: قيد الانتظار، 1: صحيح، -1: خطأ)
+        // الكلمات المطلوبة في الآية الأولى من الفاتحة كمثال
+        const targetWords = ["بِسْمِ", "اللَّهِ", "الرَّحْمَٰنِ", "الرَّحِيمِ"];
+        let userWords = [];
 
-        const surahSelect = document.getElementById('surahSelect');
-        const fromAyah = document.getElementById('fromAyah');
-        const toAyah = document.getElementById('toAyah');
-        const startBtn = document.getElementById('startBtn');
-        const statusText = document.getElementById('statusText');
-        const examBox = document.getElementById('examBox');
-        const examBadge = document.getElementById('examBadge');
-        const hiddenPrompt = document.getElementById('hiddenPrompt');
-        const feedbackBox = document.getElementById('feedbackBox');
-        const settingsBox = document.getElementById('settingsBox');
-        const helperRow = document.getElementById('helperRow');
-
-        function initApp() {
-            surahSelect.innerHTML = '';
-            for (let surahName in localQuranData) {
-                let opt = document.createElement('option');
-                opt.value = surahName;
-                opt.textContent = surahName;
-                surahSelect.appendChild(opt);
-            }
-            updateAyahOptions();
-        }
-
-        function updateAyahOptions() {
-            currentSurahName = surahSelect.value;
-            currentAyahs = localQuranData[currentSurahName];
-            fromAyah.innerHTML = '';
-            toAyah.innerHTML = '';
-            currentAyahs.forEach((_, idx) => {
-                let opt1 = document.createElement('option');
-                opt1.value = idx; opt1.textContent = `الآية ${idx + 1}`;
-                fromAyah.appendChild(opt1);
-                let opt2 = document.createElement('option');
-                opt2.value = idx; opt2.textContent = `الآية ${idx + 1}`;
-                toAyah.appendChild(opt2);
-            });
-            toAyah.value = currentAyahs.length - 1;
-            validateRange();
-        }
-
-        function validateRange() {
-            if (parseInt(fromAyah.value) > parseInt(toAyah.value)) {
-                toAyah.value = fromAyah.value;
-            }
-        }
-
-        if ('webkitSpeechRecognition' in window || 'speechRecognition' in window) {
+        function startListening() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ar-SA';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onresult = (event) => {
-                let liveTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    liveTranscript += event.results[i][0].transcript + ' ';
-                }
-                matchWordByWord(liveTranscript);
-            };
-
-            recognition.onerror = (event) => {
-                if(event.error !== 'no-speech') {
-                    statusText.textContent = 'تنبيه: ' + event.error;
-                }
-            };
-
-            recognition.onend = () => {
-                if (isSessionActive) {
-                    try { recognition.start(); } catch(e){}
-                }
-            };
-        } else {
-            alert('متصفحك لا يدعم التعرف الصوتي.');
-        }
-
-        function toggleSession() {
-            if (isSessionActive) {
-                stopSession();
-            } else {
-                startSession();
-            }
-        }
-
-        function startSession() {
-            isSessionActive = true;
-            startIndex = parseInt(fromAyah.value);
-            endIndex = parseInt(toAyah.value);
-            currentIndex = startIndex;
-            
-            startBtn.textContent = 'إيقاف الاختبار';
-            startBtn.classList.add('recording');
-            settingsBox.style.opacity = '0.3';
-            surahSelect.disabled = true;
-            fromAyah.disabled = true;
-            toAyah.disabled = true;
-            examBox.style.display = 'flex';
-            helperRow.style.display = 'block';
-
-            loadAyahTest(currentIndex);
-            try { recognition.start(); } catch(e){}
-        }
-
-        function stopSession() {
-            isSessionActive = false;
-            try { recognition.stop(); } catch(e){}
-            startBtn.textContent = 'ابدأ اختبار الحفظ الآن';
-            startBtn.classList.remove('recording');
-            settingsBox.style.opacity = '1';
-            surahSelect.disabled = false;
-            fromAyah.disabled = false;
-            toAyah.disabled = false;
-            statusText.textContent = 'تم إيقاف الاختبار.';
-            helperRow.style.display = 'none';
-        }
-
-        function loadAyahTest(index) {
-            if (index > endIndex) {
-                statusText.textContent = '🎉 مبروك! لقد أنهيت اختبار التسميع بنجاح تام.';
-                examBox.style.display = 'none';
-                stopSession();
+            if (!SpeechRecognition) {
+                alert("متصفحك لا يدعم التعرف الصوتي، يرجى استخدام متصفح Google Chrome");
                 return;
             }
-            currentIndex = index;
-            let fullAyahText = currentAyahs[currentIndex];
-            
-            examBadge.textContent = `اختبار سورة ${currentSurahName} - الآية رقم ${currentIndex + 1}`;
-            hiddenPrompt.textContent = "🎙️ اقرأ الآية كلمة بكلمة ليمتحنك التطبيق";
-            
-            targetOriginalWords = fullAyahText.split(/\s+/);
-            targetCleanWords = targetOriginalWords.map(w => cleanWord(w));
-            wordStatuses = new Array(targetOriginalWords.length).fill(0); // 0 معلق، 1 صح، -1 خطأ
-            
-            renderWordBoxes();
-            statusText.textContent = '🎙️ جاري الاستماع... في انتظار الكلمة الأولى';
-        }
 
-        function cleanWord(word) {
-            return word.replace(/[ًٌٍَُِّْـ]/g, "")
-                       .replace(/[^\w\sأإآٱةؤئىأإآ]/gi, "")
-                       .trim();
-        }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ar-SA';
+            recognition.continuous = true; // استمرار الاستماع
+            recognition.interimResults = true; // إظهار النتائج لحظياً
 
-        // رسم صناديق الكلمات الخاصة بالآية الحالية
-        function renderWordBoxes() {
-            let html = '';
-            targetOriginalWords.forEach((word, idx) => {
-                let cssClass = 'word-pending';
-                let displayText = word;
-                if (wordStatuses[idx] === 1) {
-                    cssClass = 'word-ok';
-                } else if (wordStatuses[idx] === -1) {
-                    cssClass = 'word-err';
-                    displayText = word + ' ❌';
-                } else {
-                    displayText = '• ⁠• ⁠•'; // إخفاء الكلمة حتى يتم نطقها أو طلب المساعدة
+            recognition.onstart = () => {
+                msg.innerHTML = "🔴 الميكروفون يعمل الآن... ابدأ بالقراءة";
+                display.innerHTML = "";
+            };
+
+            recognition.onresult = (event) => {
+                let currentTranscript = "";
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    currentTranscript += event.results[i][0].transcript;
                 }
-                html += `<span class="${cssClass}">${displayText}</span> `;
-            });
-            feedbackBox.innerHTML = html;
-        }
-
-        // مطابقة كل كلمة ينطقها المستخدم بدقة
-        function matchWordByWord(spokenText) {
-            if (!isSessionActive) return;
-            
-            let spokenWords = spokenText.split(/\s+/).map(w => cleanWord(w)).filter(w => w.length > 0);
-            let updated = false;
-
-            // فحص مطابقة الكلمات بالتتابع
-            let spokenIdx = 0;
-            for (let i = 0; i < targetCleanWords.length; i++) {
-                if (wordStatuses[i] === 1) continue; // تم تجاوزها مسبقاً بشكل صحيح
-
-                if (spokenIdx < spokenWords.length) {
-                    let spWord = spokenWords[spokenIdx];
-                    let targetW = targetCleanWords[i];
-
-                    if (spWord === targetW) {
-                        wordStatuses[i] = 1; // الكلمة صحيحة
-                        updated = true;
-                        spokenIdx++;
+                
+                // تحويل النص لكلمات
+                const spokenWords = currentTranscript.trim().split(/\s+/);
+                display.innerHTML = "";
+                
+                spokenWords.forEach((word, index) => {
+                    const span = document.createElement('span');
+                    span.className = 'word';
+                    span.innerText = word + " ";
+                    
+                    // مقارنة بسيطة (كلمة بكلمة)
+                    if (targetWords[index] && word.includes(targetWords[index].replace(/[^\w\s]/g, ''))) {
+                        span.classList.add('correct');
                     } else {
-                        // إذا كانت الكلمة غير مطابقة، نعتبرها خاطئة مؤقتاً لتظهر باللون الأحمر
-                        wordStatuses[i] = -1;
-                        updated = true;
-                        spokenIdx++;
+                        span.classList.add('wrong');
                     }
-                }
-            }
+                    display.appendChild(span);
+                });
+            };
 
-            if (updated) {
-                renderWordBoxes();
-            }
+            recognition.onerror = (e) => {
+                msg.innerHTML = "حدث خطأ: " + e.error + ". حاول الضغط مرة أخرى.";
+            };
 
-            // التحقق مما إذا تم إنهاء جميع كلمات الآية بشكل صحيح تماماً
-            let allCorrect = wordStatuses.every(st => st === 1);
-            if (allCorrect) {
-                statusText.textContent = '✅ أحسنت! أجتزت هذه الآية، الانتقال للآية التالية...';
-                setTimeout(() => {
-                    loadAyahTest(currentIndex + 1);
-                }, 1500);
-            } else if (wordStatuses.includes(-1)) {
-                statusText.textContent = '⚠️ وُجد خطأ في إحدى الكلمات (محددة باللون الأحمر).';
-            }
+            recognition.start();
         }
-
-        function revealAyahText() {
-            // إظهار الكلمات الحقيقية للتوضيح عند النسيان
-            let html = '';
-            targetOriginalWords.forEach((word, idx) => {
-                let cssClass = wordStatuses[idx] === 1 ? 'word-ok' : 'word-pending';
-                html += `<span class="${cssClass}">${word}</span> `;
-            });
-            feedbackBox.innerHTML = html;
-            hiddenPrompt.textContent = "💡 تم كشف النص للمساعدة";
-        }
-
-        window.onload = initApp;
     </script>
 </body>
 </html>
